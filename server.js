@@ -5,6 +5,7 @@ const passport = require('passport');
 const PORT = process.env.PORT
 const passportConfig = require('./config/passport');
 const auth = require('./routes/auth');
+const account = require('./routes/account')
 
 require("dotenv").config()
 
@@ -35,8 +36,11 @@ app.use(express.urlencoded({ extended: true }));
 //Auth routes
 app.use('/auth', auth);
 
+//Account routes
+app.use('/account', account);
+
 app.get('/',  (req, res) => {
-  res.send('Hello World!')
+  res.status(200).json({status: 'ok'})
 })
 
 

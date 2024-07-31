@@ -1,6 +1,6 @@
 
 const LocalStrategy = require('passport-local').Strategy;
-const { findUserByUsername, comparePassword, findUserById } = require('../models/Users');
+const { findUserByUsername, comparePassword, findUserById, addLoginAttempt } = require('../models/User');
 
 module.exports = function(passport) {
   passport.use(
@@ -13,7 +13,8 @@ module.exports = function(passport) {
 
         const isMatch = await comparePassword(password, user.password);
         if (!isMatch) {
-          return done(null, false, { message: 'Incorrect password' });
+          const {attempts} = await addLoginAttempt(username)
+          return done(null, false, { message: `Incorrect password, ${3-attempts} attempts left` });
         }
 
         return done(null, user);
@@ -34,5 +35,5 @@ module.exports = function(passport) {
     } catch (err) {
       done(err, null);
     }
-  });
+  });2
 };

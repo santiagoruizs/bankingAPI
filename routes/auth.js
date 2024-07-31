@@ -1,6 +1,8 @@
 const express = require('express');
 const passport = require('passport');
-const { createUser, findUserByUsername } = require('../models/Users');
+const { createUser, findUserByUsername, addLoginAttempt, resetLoginAttempts  } = require('../models/User');
+const { createAccount } = require('../models/Account')
+const {checkAttempts} = require('../middlewares/authMiddleware')
 const router = express.Router();
 
 // Signup
@@ -14,14 +16,15 @@ router.post('/signup', async (req, res) => {
     }
 
     const newUser = await createUser(username, password, email);
-    res.status(201).json({ message: 'User registered successfully', user: newUser });
+    const account = await createAccount(newUser.id)
+    res.status(201).json({ message: 'User registered successfully', user: newUser, account: account });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 // Login
-router.post('/login', (req, res, next) => {
+router.post('/login',checkAttempts, (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) {
       return res.status(500).json({ message: 'Server error' });
@@ -33,6 +36,7 @@ router.post('/login', (req, res, next) => {
       if (err) {
         return res.status(500).json({ message: 'Server error' });
       }
+      resetLoginAttempts(req.body.username)
       return res.status(200).json({ message: 'Logged in successfully' });
     });
   })(req, res, next);

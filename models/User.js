@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 async function createUser(username, password, email) {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  const query = 'INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING id, username';
+  const query = 'INSERT INTO users (username, password, email, attempts) VALUES ($1, $2, $3, 0) RETURNING id, username';
   const values = [username, hashedPassword, email];
   const res = await pool.query(query, values);
   return res.rows[0];
@@ -25,6 +25,20 @@ async function findUserById(id) {
   return res.rows[0];
 }
 
+async function addLoginAttempt(username) {
+  const query = 'UPDATE users set attempts = attempts + 1 WHERE username = $1 RETURNING attempts';
+  const values = [username];
+  const res = await pool.query(query, values);
+  return res.rows[0];
+}
+
+async function resetLoginAttempts(username) {
+  const query = 'UPDATE users set attempts = 0 WHERE username = $1 RETURNING attempts';
+  const values = [username];
+  const res = await pool.query(query, values);
+  return res.rows[0];
+}
+
 async function comparePassword(candidatePassword, hash) {
   return bcrypt.compare(candidatePassword, hash);
 }
@@ -34,4 +48,6 @@ module.exports = {
   findUserByUsername,
   findUserById,
   comparePassword,
+  addLoginAttempt,
+  resetLoginAttempts
 };
