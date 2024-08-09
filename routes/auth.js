@@ -32,15 +32,18 @@ router.post('/login',checkAttempts, (req, res, next) => {
     if (!user) {
       return res.status(400).json({ message: info.message });
     }
-    req.logIn(user, err => {
+    req.logIn(user, async err => {
       if (err) {
         return res.status(500).json({ message: 'Server error' });
       }
       resetLoginAttempts(req.body.username)
-      return res.status(200).json({ message: 'Logged in successfully' });
+      const userData = await findUserByUsername(req.body.username);
+      const {id, username} = userData
+      return res.status(200).json({ message: 'Logged in successfully', username, id });
     });
   })(req, res, next);
 });
+
 
 // Logout Route
 router.get('/logout', (req, res) => {

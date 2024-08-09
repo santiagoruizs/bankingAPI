@@ -6,7 +6,7 @@ const PORT = process.env.PORT
 const passportConfig = require('./config/passport');
 const auth = require('./routes/auth');
 const account = require('./routes/account')
-
+const cors = require('cors')
 require("dotenv").config()
 
 const app = express()
@@ -28,7 +28,8 @@ app.use(passport.session());
 
 passportConfig(passport);
 
-
+// cors
+app.use(cors())
 // Body parser middlewares
 app.use(express.json());  
 app.use(express.urlencoded({ extended: true }));

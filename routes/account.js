@@ -13,8 +13,8 @@ router.get('/:user_id', async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }   
 });
-// Add Funds
-router.put('/:user_id/addfunds', async (req, res) => {
+// deposit
+router.put('/:user_id/deposit', async (req, res) => {
     const user_id = req.params.user_id
     const {ammount} = req.body
     const parsedAmount = parseFloat(ammount)
