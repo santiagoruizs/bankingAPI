@@ -2,37 +2,61 @@ const { pool } = require("../config/db");
 
 // Account queries
 async function createAccount(userId) {
-  let accountNumber = "";
-  for (let i = 0; i < 8; i++) {
-    // Generate a random digit between 0 and 9 and append it to the account number
-    accountNumber += Math.floor(Math.random() * 10);
+  try{
+    let accountNumber = "";
+    for (let i = 0; i < 8; i++) {
+      // Generate a random digit between 0 and 9 and append it to the account number
+      accountNumber += Math.floor(Math.random() * 10);
+    }
+    const query =
+      "INSERT INTO accounts (account_number, user_id, balance) VALUES ($1, $2, $3) RETURNING account_number, balance";
+    const values = [accountNumber, userId, 2000];
+    const res = await pool.query(query, values);
+    return res.rows[0];
+  }catch(err){
+    console.error('Error creating the account:', err);
+    return res.status(500).json({ msg: err.message });
   }
-  const query =
-    "INSERT INTO accounts (account_number, user_id, balance) VALUES ($1, $2, $3) RETURNING account_number, balance";
-  const values = [accountNumber, userId, 2000];
-  const res = await pool.query(query, values);
-  return res.rows[0];
+  
 }
 
 async function getAccountInfoByUserId(userId) {
-  const query = "SELECT * FROM accounts WHERE user_id = $1";
-  const values = [userId];
-  const res = await pool.query(query, values);
-  return res.rows[0];
+  try{
+    const query = "SELECT * FROM accounts WHERE user_id = $1";
+    const values = [userId];
+    const res = await pool.query(query, values);
+    return res.rows[0];
+  }catch(err){
+    console.error('Error getting info from user:', err);
+    return res.status(500).json({ msg: err.message });
+  }
+  
 }
 
 async function getAccountInfoByAccountNumber(acountNumber) {
-  const query = "SELECT * FROM accounts WHERE account_number = $1";
-  const values = [acountNumber];
-  const res = await pool.query(query, values);
+  try{
+    const query = "SELECT * FROM accounts WHERE account_number = $1";
+    const values = [acountNumber];
+    const res = await pool.query(query, values);
   return res.rows[0];
+  }catch(err){
+    console.error('Error getting info from user:', err);
+    return res.status(500).json({ msg: err.message });
+  }
+  
 }
 
 async function checkSufficientBalance(user_id, amount) {
-  const query = "SELECT balance FROM accounts WHERE user_id = $1";
-  const values = [user_id];
-  const res = await pool.query(query, values);
-  return res.rows[0].balance > amount;
+  try{
+    const query = "SELECT balance FROM accounts WHERE user_id = $1";
+    const values = [user_id];
+    const res = await pool.query(query, values);
+    return res.rows[0].balance > amount;
+  }catch(err){
+    console.error('Error consulting sufficient balance:', err);
+    return res.status(500).json({ msg: err.message });
+  }
+  
 }
 
 async function transferAccountFunds(user_id, toAccountNumber, amount) {
@@ -75,19 +99,31 @@ async function transferAccountFunds(user_id, toAccountNumber, amount) {
 }
 
 async function addFundsToAccount(user_id, amount) {
-  const query =
+  try{
+    const query =
     "UPDATE accounts set balance = balance + $1 WHERE user_id = $2 RETURNING balance";
-  const values = [amount, user_id];
-  const res = await pool.query(query, values);
-  return res.rows[0];
+    const values = [amount, user_id];
+    const res = await pool.query(query, values);
+    return res.rows[0];
+  }catch(err){
+    console.error('Error adding funds:', err);
+    return res.status(500).json({ msg: err.message });
+  }
+  
 }
 
 async function widthdrawFunds(user_id, amount) {
-  const query =
+  try{
+    const query =
     "UPDATE accounts set balance = balance - $1 WHERE user_id = $2 RETURNING balance";
-  const values = [amount, user_id];
-  const res = await pool.query(query, values);
-  return res.rows[0];
+    const values = [amount, user_id];
+    const res = await pool.query(query, values);
+    return res.rows[0];
+  }catch(err){
+    console.error('Error creating the account:', err);
+    return res.status(500).json({ msg: err.message });
+  }
+  
 }
 
 // async function deleteAccount(username) {
