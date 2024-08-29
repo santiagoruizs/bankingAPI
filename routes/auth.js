@@ -19,7 +19,7 @@ router.post('/signup', async (req, res) => {
     const account = await createAccount(newUser.id)
     res.status(201).json({ message: 'User registered successfully', user: newUser, account: account });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -34,7 +34,7 @@ router.post('/login',checkAttempts, (req, res, next) => {
     }
     req.logIn(user, async err => {
       if (err) {
-        return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: err.message });
       }
       resetLoginAttempts(req.body.username)
       const userData = await findUserByUsername(req.body.username);
