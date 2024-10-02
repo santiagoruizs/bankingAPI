@@ -11,7 +11,7 @@ const pool = new Pool({
     ssl: {
       require: true,
       rejectUnauthorized: false,
-      ca: fs.readFileSync('./services/ca.pem')
+      ca: fs.readFileSync('ca.pem')
     }
 })
 
