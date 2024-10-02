@@ -33,7 +33,8 @@ app.use(cors())
 // Body parser middlewares
 app.use(express.json());  
 app.use(express.urlencoded({ extended: true }));
-
+// Session Control
+app.use(passport.authenticate('session'));
 //Auth routes
 app.use('/auth', auth);
 
@@ -45,14 +46,14 @@ app.get('/',  (req, res) => {
 })
 
 
-app.get('/users', (req, res) => {
-  query('select * from users;',(error, results) => {
-      if(error){
-          res.status(400).json({msg: error.message})
-      }
-      res.status(200).json(results.rows)
-  })
-})
+// app.get('/users', (req, res) => {
+//   query('select * from users;',(error, results) => {
+//       if(error){
+//           res.status(400).json({msg: error.message})
+//       }
+//       res.status(200).json(results.rows)
+//   })
+// })
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`)
