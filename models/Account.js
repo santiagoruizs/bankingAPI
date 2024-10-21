@@ -1,5 +1,5 @@
 const { pool } = require("../config/db");
-
+const {logTransaction} = require('./Transactions')
 // Account queries
 async function createAccount(userId) {
   try{
@@ -62,15 +62,15 @@ async function checkSufficientBalance(user_id, amount) {
 async function transferAccountFunds(user_id, toAccountNumber, amount) {
   try {
     const parsedAmount = parseFloat(amount)
-    console.log(amount)
-    console.log(toAccountNumber)
+    // console.log(amount)
+    // console.log(toAccountNumber)
     await pool.query("BEGIN");
 
     const subtractFundsQuery = `
       UPDATE accounts
       SET balance = balance - $1
       WHERE user_id = $2
-      RETURNING balance;
+      RETURNING account_number, balance;
     `;
     const subtractValues = [parsedAmount, user_id];
     const subtractRes = await pool.query(subtractFundsQuery, subtractValues);
@@ -87,8 +87,9 @@ async function transferAccountFunds(user_id, toAccountNumber, amount) {
     if (addRes.rows.length === 0) {
       throw new Error("Destination account not found");
     }
+    const {account_number, balance} = subtractRes.rows[0]
+    const trans = await logTransaction(account_number, toAccountNumber, 'transfer', amount, "test")
     await pool.query("COMMIT");
-
     return {
       fromAccountBalance: subtractRes.rows[0].balance,
     };
@@ -101,12 +102,14 @@ async function transferAccountFunds(user_id, toAccountNumber, amount) {
 async function addFundsToAccount(user_id, amount) {
   try{
     const query =
-    "UPDATE accounts set balance = balance + $1 WHERE user_id = $2 RETURNING balance";
+    "UPDATE accounts set balance = balance + $1 WHERE user_id = $2 RETURNING account_number, balance";
     const values = [amount, user_id];
     const res = await pool.query(query, values);
+    const {account_number, balance} = res.rows[0]
+    const trans = await logTransaction(account_number, null, 'deposit', amount, "test")
     return res.rows[0];
   }catch(err){
-    console.error('Error adding funds:', err);
+    console.error('Error adding funds:', err); 
     return res.status(500).json({ msg: err.message });
   }
   
@@ -115,9 +118,11 @@ async function addFundsToAccount(user_id, amount) {
 async function widthdrawFunds(user_id, amount) {
   try{
     const query =
-    "UPDATE accounts set balance = balance - $1 WHERE user_id = $2 RETURNING balance";
+    "UPDATE accounts set balance = balance - $1 WHERE user_id = $2 RETURNING account_number, balance";
     const values = [amount, user_id];
     const res = await pool.query(query, values);
+    const {account_number, balance} = res.rows[0]
+    const trans = await logTransaction(account_number, null, 'widthdraw', amount, "test")
     return res.rows[0];
   }catch(err){
     console.error('Error creating the account:', err);
@@ -125,7 +130,35 @@ async function widthdrawFunds(user_id, amount) {
   }
   
 }
+// async function logTransaction(fromAccountNumber, toAccountNumber, transaction_type, amount, category) {
+//   try{
+//     const query =
+//     `INSERT INTO transactions (from_account_number, to_account_number, transaction_type, ammount, category, transaction_time) 
+//     VALUES($1, $2, $3, $4, $5, NOW()) RETURNING from_account_number, ammount, transaction_time`;
+//     const values = [fromAccountNumber, toAccountNumber, transaction_type, amount, category];
+//     const res = await pool.query(query, values);
+//     return res.rows[0];
+//   }catch(err){
+//     console.error('Error creating the account:', err);
+//     return res.status(500).json({ msg: err.message });
+//   }
+  
+// }
 
+// async function getTransactionsByAccount(accountNumber) {
+//   try{
+//     const query =
+//     `select * from transactions where from_account_number = $1 or to_account_number = $1`;
+//     const values = [accountNumber];
+//     const res = await pool.query(query, values);
+//     console.log(res.rows[0])
+//     return res.rows[0];
+//   }catch(err){
+//     console.error('Error creating the account:', err);
+//     return res.status(500).json({ msg: err.message });
+//   }
+  
+// }
 // async function deleteAccount(username) {
 //     const query = 'UPDATE users set attempts = 0 WHERE username = $1 RETURNING attempts';
 //     const values = [username];

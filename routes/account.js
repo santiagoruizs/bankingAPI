@@ -55,7 +55,7 @@ router.put('/:user_id/widthdraw', checkBalance, async (req, res) => {
 // transfer
 router.put('/:user_id/transfer', checkBalance, async (req, res) => {
     const user_id = req.params.user_id
-    console.log(req.body)
+    // console.log(req.body)
     const {ammount, toAccountNumber} = req.body
     const parsedAmount = parseFloat(ammount)
     try{

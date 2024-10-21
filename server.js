@@ -4,8 +4,12 @@ const session = require('express-session');
 const passport = require('passport');
 const PORT = process.env.PORT
 const passportConfig = require('./config/passport');
+
+//routes
 const auth = require('./routes/auth');
 const account = require('./routes/account')
+const transactions = require('./routes/transactions')
+
 const cors = require('cors')
 require("dotenv").config()
 
@@ -19,6 +23,7 @@ app.use(session({
   secret: 'your-secret-key',
   resave: false,
   saveUninitialized: false,
+  expires: new Date(Date.now() + (60 * 1000)),
   cookie: { secure: false }, // HTTPS
 }));
 
@@ -41,20 +46,13 @@ app.use('/auth', auth);
 //Account routes
 app.use('/account', account);
 
+//Transactions routes
+app.use('/transactions', transactions);
+
 app.get('/',  (req, res) => {
   res.status(200).json({status: 'ok'})
 })
 
-
-// app.get('/users', (req, res) => {
-//   query('select * from users;',(error, results) => {
-//       if(error){
-//           res.status(400).json({msg: error.message})
-//       }
-//       res.status(200).json(results.rows)
-//   })
-// })
-
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}`)
+  console.log(`Listening on port ${PORT}`)
 })
