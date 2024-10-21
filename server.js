@@ -24,7 +24,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   expires: new Date(Date.now() + (60 * 1000)),
-  cookie: { secure: false }, // HTTPS
+  cookie: { secure: true }, // HTTPS
 }));
 
 // Initialize Passport
